@@ -1,128 +1,107 @@
-package it.unicam.ids.loyaltyplatform.Dashboard;
+package it.unicam.ids.loyaltyplatform.dashboard;
 
-import it.unicam.ids.loyaltyplatform.Account.AccountService;
-import it.unicam.ids.loyaltyplatform.Account.models.Account;
-import it.unicam.ids.loyaltyplatform.Account.models.Ruolo;
-import it.unicam.ids.loyaltyplatform.Account.models.Titolare;
-import it.unicam.ids.loyaltyplatform.Account.models.Utente;
-import it.unicam.ids.loyaltyplatform.PF.ProgrammaFedeltaService;
-import it.unicam.ids.loyaltyplatform.PF.models.*;
-import it.unicam.ids.loyaltyplatform.PuntoVendita.PuntoVenditaService;
-import it.unicam.ids.loyaltyplatform.PuntoVendita.models.PuntoVendita;
-import org.springframework.beans.factory.annotation.Autowired;
+import it.unicam.ids.loyaltyplatform.account.AccountService;
+import it.unicam.ids.loyaltyplatform.account.models.*;
+import it.unicam.ids.loyaltyplatform.pf.ProgrammaFedeltaService;
+import it.unicam.ids.loyaltyplatform.pf.models.PFType;
+import it.unicam.ids.loyaltyplatform.pf.models.ProgrammaFedelta;
+import it.unicam.ids.loyaltyplatform.puntovendita.PuntoVenditaService;
+import it.unicam.ids.loyaltyplatform.puntovendita.models.PuntoVendita;
+import it.unicam.ids.loyaltyplatform.tessera.TesseraService;
+import it.unicam.ids.loyaltyplatform.tessera.models.Tessera;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class DashboardService {
-
     private final PuntoVenditaService pvService;
     private final ProgrammaFedeltaService pfService;
-
     private final AccountService accountService;
+    private final TesseraService tesseraService;
 
-    @Autowired
-    public DashboardService(PuntoVenditaService pvService, ProgrammaFedeltaService pfService, AccountService accountService) {
-        this.pvService = pvService;
-        this.pfService = pfService;
-        this.accountService = accountService;
-    }
+    public ProgrammaFedelta creaProgrammaFedelta(int account_id, PFType pfType){
 
-    public ProgrammaFedelta creaProgrammaFedeltà(PFType type, int idTitolare){
-
-        Titolare t = accountService.findTitolareById(idTitolare);
-
-        ProgrammaFedelta newPF;
-
-        if(!checkProgrammaDisponibile(t.getIdPuntoVendita(),type)){
-            throw new IllegalArgumentException("Programma Fedeltà non disponibile");
+        Titolare t = accountService.findAccount(account_id, AccountType.TITOLARE);
+        PuntoVendita puntoVendita = t.getPuntoVendita();
+        if(puntoVendita == null){
+            throw new IllegalArgumentException("Couldn't find Punto Vendita in Titolare's account!");
+        } else {
+            return puntoVendita.addProgrammaFedelta(pfType, puntoVendita);
         }
-
-        switch (type) {
-            case PFPUNTI -> {
-                newPF = new ProgrammaPunti(type, t.getIdPuntoVendita());
-            }
-            case PFLIVELLI -> {
-                newPF = new ProgrammaLivelli(type, t.getIdPuntoVendita());
-            }
-            case PFCASHBACK -> {
-                newPF = new ProgrammaCashback(type, t.getIdPuntoVendita());
-            }
-            case PFVIP -> {
-                newPF = new ProgrammaVip(type, t.getIdPuntoVendita());
-            }
-            case PFCOALIZIONE -> {
-                newPF = new ProgrammaCoalizione(type, t.getIdPuntoVendita());
-            }
-            default -> throw new IllegalArgumentException("Invalid Type");
-        }
-
-        return pfService.addPF(newPF);
 
     }
 
-    private Boolean checkProgrammaDisponibile(int pvId, PFType type){
+    public <T extends ProgrammaFedelta> T modificaProgrammaFedelta(T programmaFedelta, int account_id){
+        Titolare t = accountService.findAccount(account_id, AccountType.TITOLARE);
+        PuntoVendita puntoVendita = t.getPuntoVendita();
 
-        List<ProgrammaFedelta> attivi = pvService.getProgrammiAttivi(pvId);
-
-        if(attivi.size() == 5){
-            return false;
-        }
-
-        for (ProgrammaFedelta pf: attivi) {
-            if(pf.getType() == type){
-                return false;
-            }
-        }
-        return true;
+        return puntoVendita.updateProgrammaFedelta(programmaFedelta);
     }
 
-    public ProgrammaFedelta modificaProgrammaFedeltà(ProgrammaFedelta modPF, int idTitolare){
-
-        List<ProgrammaFedelta> attivi = pvService.getProgrammiAttivi(accountService.findTitolareById(idTitolare).getIdPuntoVendita());
-
-        if(attivi.size() == 0){
-            throw new IllegalArgumentException("Programmi fedeltà attivi non trovati");
-        }
-
-        for (ProgrammaFedelta pf: attivi) {
-
-            if(pf.getType() == modPF.getType()){
-                return pfService.updatePF(modPF);
-            }
-        }
-        throw new IllegalArgumentException("Nessun programma da modificare");
-
-    }
-
-    public Account registraCliente(Utente cliente, int idCassiere){
-
-
-        if(accountService.findAccountById(idCassiere).getRuolo() != Ruolo.CASSIERE){
-            throw new IllegalArgumentException("ID Cassiere non valido");
-        }
-
+    public Utente registraCliente(Utente cliente){
         return accountService.addAccount(cliente);
     }
 
-    public PuntoVendita registraPuntoVendita(PuntoVendita pv, int idTitolare){
-
-        Titolare titolare = accountService.findTitolareById(idTitolare);
-        PuntoVendita newPV;
-
-        if(titolare.getRuolo() != Ruolo.TITOLARE){
-            throw new IllegalArgumentException("ID Titolare non valido");
+    public PuntoVendita registraPuntoVendita(int account_id, PuntoVendita puntoVendita){
+        Titolare t = accountService.findAccount(account_id, AccountType.TITOLARE);
+        if(t.getPuntoVendita() == null){
+            puntoVendita.setTitolare(t);
+            PuntoVendita newPV = pvService.addPuntoVendita(puntoVendita);
+            t.setPuntoVendita(newPV);
+            return newPV;
+        } else {
+            throw new IllegalArgumentException("Account already has a Punto Vendita!");
         }
+    }
 
-        if(titolare.getIdPuntoVendita() != 0){
-            throw new IllegalArgumentException("Titolare ha già un punto vendita");
+    public PuntoVendita cercaPuntoVendita(String nome){
+        return pvService.findPuntoVendita(nome);
+    }
+
+    public Tessera iscrizionePF(int utente_id, int pf_id){
+        Utente utente = accountService.findAccount(utente_id);
+        ProgrammaFedelta programmaFedelta = pfService.findPF(pf_id);
+        return utente.addTessera(new Tessera(utente, programmaFedelta));
+    }
+
+    public void rimuoviIscrizione(int utente_id, Tessera tessera){
+        accountService.rimuoviTesseraUtente(utente_id, tessera);
+    }
+
+    public <T extends ProgrammaFedelta> List<Utente> visualizzaClienti(int pf_id){
+        T pf = pfService.findPF(pf_id);
+        List<Tessera> tessere = tesseraService.findTessera(pf);
+        List<Utente> utenti = new ArrayList<>();
+
+        for (Tessera t : tessere){
+            utenti.add(t.getUtente());
         }
-        newPV = pvService.addPuntoVendita(pv);
-        titolare.setIdPuntoVendita(newPV.getId());
-        accountService.updateAccount(titolare);
-        return newPV;
+        return utenti;
 
+    }
+
+    public void rimuoviUtente(int utente_id){
+        accountService.deleteAccount(utente_id);
+    }
+
+    public <T extends Account> T updateAccount(T account){
+        return accountService.updateAccount(account);
+    }
+
+    public <T extends Account> T visualizzaInfoCliente(int account_id){
+        return accountService.findAccount(account_id);
+    }
+
+    public <T extends Account> T visualizzaInfoCliente(T account){
+        return accountService.findAccount(account);
+    }
+
+    public <T extends Account> T visualizzaInfoCliente(String email){
+        return accountService.findAccount(email);
     }
 
 }

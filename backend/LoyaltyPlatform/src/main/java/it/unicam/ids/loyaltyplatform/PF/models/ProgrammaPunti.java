@@ -1,42 +1,33 @@
-package it.unicam.ids.loyaltyplatform.PF.models;
+package it.unicam.ids.loyaltyplatform.pf.models;
 
+import it.unicam.ids.loyaltyplatform.puntovendita.models.PuntoVendita;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @DiscriminatorValue(value = "Punti")
+@Getter
+@Setter
 public class ProgrammaPunti extends ProgrammaFedelta {
 
     private int threshold;
     private int maxPunti;
 
     public ProgrammaPunti() {
-
+        this.setType(PFType.PFPUNTI);
     }
-    public ProgrammaPunti(PFType type, int rapporto, int threshold, int maxPunti, int pvId) {
-        super(type, rapporto, pvId);
-        this.threshold = threshold;
-        this.maxPunti = maxPunti;
+    public ProgrammaPunti(PuntoVendita puntoVendita) {
+        setPuntoVendita(puntoVendita);
+        setType(PFType.PFPUNTI);
     }
-
-    public ProgrammaPunti(PFType type, int pvId) {
-        super(type, pvId);
-    }
-
-
-    public void setThreshold(int threshold){
-        this.threshold = threshold;
+    public ProgrammaPunti(int rapporto, int threshold, int maxPunti, PuntoVendita puntoVendita) {
+        setPuntoVendita(puntoVendita);
+        setType(PFType.PFPUNTI);
+        setRapporto(rapporto);
+        setThreshold(threshold);
+        setMaxPunti(maxPunti);
     }
 
-    public int getThreshold(){
-        return threshold;
-    }
-
-    public void setMaxPunti(int maxPunti){
-        this.maxPunti = maxPunti;
-    }
-
-    public int getMaxPunti(){
-        return maxPunti;
-    }
 }

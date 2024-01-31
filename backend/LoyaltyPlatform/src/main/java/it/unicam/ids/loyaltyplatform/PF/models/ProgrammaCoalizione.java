@@ -1,33 +1,32 @@
-package it.unicam.ids.loyaltyplatform.PF.models;
+package it.unicam.ids.loyaltyplatform.pf.models;
 
+import it.unicam.ids.loyaltyplatform.puntovendita.models.PuntoVendita;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @DiscriminatorValue(value = "Coalizione")
-public class ProgrammaCoalizione extends ProgrammaFedelta {
+@Getter
+@Setter
+public class ProgrammaCoalizione extends ProgrammaFedelta{
 
     private int idCollaboratore;
 
-    public ProgrammaCoalizione() {
-
+    public ProgrammaCoalizione(){
+        setType(PFType.PFCOALIZIONE);
     }
 
-    public ProgrammaCoalizione(PFType type, short rapporto, int idCollaboratore, int pvId) {
-        super(type, rapporto, pvId);
-        this.idCollaboratore = idCollaboratore;
+    public ProgrammaCoalizione(PuntoVendita puntoVendita){
+        setType(PFType.PFCOALIZIONE);
+        setPuntoVendita(puntoVendita);
     }
 
-    public ProgrammaCoalizione(PFType type, int pvId) {
-        super(type, pvId);
-    }
-
-
-    public int getIdCollaboratore() {
-        return idCollaboratore;
-    }
-
-    public void setIdCollaboratore(int idCollaboratore) {
-        this.idCollaboratore = idCollaboratore;
+    public ProgrammaCoalizione(int rapporto, int idCollaboratore, PuntoVendita puntoVendita){
+        setType(PFType.PFCOALIZIONE);
+        setPuntoVendita(puntoVendita);
+        setRapporto(rapporto);
+        setIdCollaboratore(idCollaboratore);
     }
 }

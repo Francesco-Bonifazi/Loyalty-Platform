@@ -1,35 +1,31 @@
-package it.unicam.ids.loyaltyplatform.PF.models;
+package it.unicam.ids.loyaltyplatform.pf.models;
 
-import it.unicam.ids.loyaltyplatform.PF.models.PFType;
-import it.unicam.ids.loyaltyplatform.PF.models.ProgrammaFedelta;
+import it.unicam.ids.loyaltyplatform.puntovendita.models.PuntoVendita;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @DiscriminatorValue(value = "VIP")
+@Getter
+@Setter
 public class ProgrammaVip extends ProgrammaFedelta {
 
     private int costo;
 
     public ProgrammaVip() {
-
+        setType(PFType.PFVIP);
+    }
+    public ProgrammaVip(PuntoVendita puntoVendita) {
+        setPuntoVendita(puntoVendita);
+        setType(PFType.PFVIP);
+    }
+    public ProgrammaVip(int rapporto, int costo, PuntoVendita puntoVendita) {
+        setPuntoVendita(puntoVendita);
+        setType(PFType.PFVIP);
+        setRapporto(rapporto);
+        setCosto(costo);
     }
 
-    public ProgrammaVip(PFType type, int rapporto, int costo, int pvId) {
-        super(type, rapporto, pvId);
-        this.costo = costo;
-    }
-
-    public ProgrammaVip(PFType type, int pvId) {
-        super(type, pvId);
-    }
-
-
-    public int getCosto() {
-        return costo;
-    }
-
-    public void setCosto(int costo) {
-        this.costo = costo;
-    }
 }

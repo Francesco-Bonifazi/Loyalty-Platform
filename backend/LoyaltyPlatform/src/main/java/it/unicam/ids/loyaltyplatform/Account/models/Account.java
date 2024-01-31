@@ -1,82 +1,86 @@
-package it.unicam.ids.loyaltyplatform.Account.models;
+package it.unicam.ids.loyaltyplatform.account.models;
 
 import jakarta.persistence.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "Account_Type", discriminatorType = DiscriminatorType.STRING)
-public abstract class Account{
+@NoArgsConstructor
+@Data
+public abstract class Account implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(nullable = false, updatable = false)
     private int id;
+
     private String nome;
     private String cognome;
     private String email;
+    private String password;
     private String telefono;
     @Enumerated(value = EnumType.STRING)
-    private Ruolo ruolo;
+    @ElementCollection(targetClass = Permessi.class, fetch = FetchType.EAGER)
+    private List<Permessi> permessi = new ArrayList<>();
 
-    public Account() {
+    @Enumerated(value = EnumType.STRING)
+    private AccountType type;
 
+
+    public void addPermesso(Permessi permesso){
+        this.permessi.add(permesso);
+    }
+    public void removePermesso(Permessi permesso){
+        this.permessi.remove(permesso);
     }
 
-    public Account(String nome, String cognome, String email, String telefono, Ruolo ruolo) {
-        this.nome = nome;
-        this.cognome = cognome;
-        this.email = email;
-        this.telefono = telefono;
-        this.ruolo = ruolo;
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        List<SimpleGrantedAuthority> perms = new ArrayList<>();
+        for(Permessi p : permessi){
+            perms.add(new SimpleGrantedAuthority(p.name()));
+        }
+        return perms;
     }
 
-
-    public int getId() {
-        return this.id;
+    @Override
+    public String getPassword() {
+        return password;
     }
 
-
-    public String getNome() {
-        return this.nome;
+    @Override
+    public String getUsername() {
+        return email;
     }
 
-
-    public void setNome(String nome) {
-        this.nome = nome;
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
     }
 
-
-    public String getCognome() {
-        return this.cognome;
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
     }
 
-
-    public void setCognome(String cognome) {
-        this.cognome = cognome;
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
     }
 
-
-    public String getEmail() {
-        return this.email;
-    }
-
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-
-    public String getTelefono() {
-        return this.telefono;
-    }
-
-
-    public void setTelefono(String telefono) {
-        this.telefono = telefono;
+    @Override
+    public boolean isEnabled() {
+        return true;
     }
 
 
-    public Ruolo getRuolo() {
-        return this.ruolo;
-    }
 }

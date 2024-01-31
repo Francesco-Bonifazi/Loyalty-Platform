@@ -1,35 +1,42 @@
-package it.unicam.ids.loyaltyplatform.PF;
+package it.unicam.ids.loyaltyplatform.pf;
 
-import it.unicam.ids.loyaltyplatform.PF.models.ProgrammaFedelta;
-import org.springframework.beans.factory.annotation.Autowired;
+import it.unicam.ids.loyaltyplatform.pf.models.ProgrammaFedelta;
+import it.unicam.ids.loyaltyplatform.puntovendita.models.PuntoVendita;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class ProgrammaFedeltaService {
-
     private final ProgrammaFedeltaRepository programmaFedeltaRepository;
 
-    @Autowired
-    public ProgrammaFedeltaService(ProgrammaFedeltaRepository programmaFedeltaRepository) {
-        this.programmaFedeltaRepository = programmaFedeltaRepository;
+    public <T extends ProgrammaFedelta> T findPF(int pfId){
+        T pf = programmaFedeltaRepository.findProgrammaFedeltaById(pfId);
+        if(pf == null){
+            throw new IllegalArgumentException("Couldn't find Programma Fedelta with ID: "+pfId+"!");
+        } else {
+            return programmaFedeltaRepository.findProgrammaFedeltaById(pfId);
+        }
     }
 
-    public ProgrammaFedelta addPF(ProgrammaFedelta pf){
-        return programmaFedeltaRepository.save(pf);
+    public <T extends ProgrammaFedelta> T findPF(T programmaFedelta){
+        T pf = programmaFedeltaRepository.findProgrammaFedeltaById(programmaFedelta.getId());
+        if(pf == null){
+            throw new IllegalArgumentException("Couldn't find Programma Fedelta: "+programmaFedelta+"!");
+        } else {
+            return programmaFedeltaRepository.findProgrammaFedeltaById(pf.getId());
+        }
     }
 
-    public List<ProgrammaFedelta> findAll(){
-        return programmaFedeltaRepository.findAll();
-    }
-
-    public ProgrammaFedelta updatePF(ProgrammaFedelta pf){
-        return programmaFedeltaRepository.save(pf);
-    }
-
-    public List<ProgrammaFedelta> findActivebyPvId(int pvId){
-        return programmaFedeltaRepository.findProgrammaFedeltaByPvId(pvId);
+    public  List<? extends ProgrammaFedelta> findAllByPuntoVendita(PuntoVendita puntoVendita){
+        List<? extends ProgrammaFedelta> programmi = programmaFedeltaRepository.findProgrammaFedeltasByPuntoVendita(puntoVendita);
+        if(programmi.isEmpty()){
+            throw new IllegalArgumentException("Couldn't find any Programma Fedeltà in Punto Vendita with ID: "+puntoVendita.getId()+"!");
+        } else {
+            return programmi;
+        }
     }
 
 }

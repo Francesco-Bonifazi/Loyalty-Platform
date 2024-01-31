@@ -1,20 +1,17 @@
-package it.unicam.ids.loyaltyplatform.Account;
+package it.unicam.ids.loyaltyplatform.account;
 
-import it.unicam.ids.loyaltyplatform.Account.models.Account;
-import it.unicam.ids.loyaltyplatform.Account.models.Ruolo;
-import it.unicam.ids.loyaltyplatform.Account.models.Titolare;
+import it.unicam.ids.loyaltyplatform.account.models.Account;
+import it.unicam.ids.loyaltyplatform.account.models.AccountType;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
 
+@Repository
 public interface AccountRepository extends JpaRepository<Account, Integer> {
+
+    <T extends Account> T findAccountById(int id);
+    <T extends Account> T findAccountByEmail(String email);
+    <T extends Account> T findAccountByIdAndType(int id, AccountType type);
     void deleteAccountById(int id);
-    Account findAccountById(int id);
-
-    //Account findAccountByIdAndRuolo_Titolare(int id);
-
-    @Query("select t from Account t where t.id = ?1 and t.ruolo = 'TITOLARE'")
-    Titolare findTitolareById(int id);
-
-
+    void deleteAccountByEmail(String email);
 
 }

@@ -1,31 +1,34 @@
-package it.unicam.ids.loyaltyplatform.Account.models;
+package it.unicam.ids.loyaltyplatform.account.models;
 
-import jakarta.persistence.DiscriminatorValue;
-import jakarta.persistence.Entity;
+import it.unicam.ids.loyaltyplatform.puntovendita.models.PuntoVendita;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @DiscriminatorValue(value = "Titolare")
+@Getter
+@Setter
 public class Titolare extends Account{
 
-    private int idPuntoVendita;
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "puntovendita_id")
+    private PuntoVendita puntoVendita;
 
-    public Titolare() {
-    }
-
-    public Titolare(String nome, String cognome, String email, String telefono) {
-        super(nome, cognome, email, telefono, Ruolo.TITOLARE);
-        this.idPuntoVendita = 0;
-    }
-    public Titolare(String nome, String cognome, String email, String telefono, int idPuntoVendita) {
-        super(nome, cognome, email, telefono, Ruolo.TITOLARE);
-        this.idPuntoVendita = idPuntoVendita;
+    public Titolare(){
+        setType(AccountType.TITOLARE);
+        addPermesso(Permessi.TITOLARE);
     }
 
-    public int getIdPuntoVendita() {
-        return this.idPuntoVendita;
+    public Titolare(String nome, String cognome, String email, String telefono, String password) {
+        setNome(nome);
+        setCognome(cognome);
+        setEmail(email);
+        setTelefono(telefono);
+        setPassword(password);
+        addPermesso(Permessi.TITOLARE);
+        setType(AccountType.TITOLARE);
+        setPuntoVendita(null);
     }
 
-    public void setIdPuntoVendita(int idPuntoVendita) {
-        this.idPuntoVendita = idPuntoVendita;
-    }
 }
