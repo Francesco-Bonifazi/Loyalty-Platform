@@ -1,19 +1,15 @@
 package it.unicam.ids.loyaltyplatform.puntovendita.models;
 
-import it.unicam.ids.loyaltyplatform.account.models.Account;
-import it.unicam.ids.loyaltyplatform.account.models.Titolare;
 import it.unicam.ids.loyaltyplatform.pf.models.*;
 import jakarta.persistence.*;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.util.List;
 
 @Entity
+@Data
 @NoArgsConstructor
-@Getter
-@Setter
 public class PuntoVendita {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -27,11 +23,11 @@ public class PuntoVendita {
     private String logo;
     private String linkExt;
 
-    @OneToMany(fetch = FetchType.EAGER, mappedBy = "puntoVendita", cascade = CascadeType.ALL)
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<ProgrammaFedelta> programmiFedelta;
 
-    @OneToOne
-    private Titolare titolare;
+
+
 
     public PuntoVendita(String nome, String email, String telefono, String indirizzo) {
         this.nome = nome;
@@ -55,7 +51,7 @@ public class PuntoVendita {
         return programmaFedelta;
     }
 
-    public ProgrammaFedelta addProgrammaFedelta(PFType type, PuntoVendita puntoVendita){
+    public ProgrammaFedelta addProgrammaFedelta(PFType type){
         if(programmiFedelta.size() == 5){
             throw new IllegalArgumentException("Punto Vendita has reached the max amount of Programmi!");
         }
@@ -64,22 +60,23 @@ public class PuntoVendita {
                 throw new IllegalArgumentException("Programma fedeltà already exists!");
             }
         }
+
         ProgrammaFedelta newPF;
         switch (type) {
             case PFPUNTI -> {
-                newPF = new ProgrammaPunti(puntoVendita);
+                newPF = new ProgrammaPunti();
             }
             case PFLIVELLI -> {
-                newPF = new ProgrammaLivelli(puntoVendita);
+                newPF = new ProgrammaLivelli();
             }
             case PFCASHBACK -> {
-                newPF = new ProgrammaCashback(puntoVendita);
+                newPF = new ProgrammaCashback();
             }
             case PFVIP -> {
-                newPF = new ProgrammaVip(puntoVendita);
+                newPF = new ProgrammaVip();
             }
             case PFCOALIZIONE -> {
-                newPF = new ProgrammaCoalizione(puntoVendita);
+                newPF = new ProgrammaCoalizione();
             }
             default -> throw new IllegalArgumentException("Invalid Type");
         }

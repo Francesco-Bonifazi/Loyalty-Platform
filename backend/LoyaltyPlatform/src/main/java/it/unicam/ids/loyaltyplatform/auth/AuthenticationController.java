@@ -18,9 +18,4 @@ public class AuthenticationController {
         return new ResponseEntity<>(authenticationService.authenticate(request), HttpStatus.OK);
     }
 
-    @GetMapping("/test")
-    public ResponseEntity<?> test(){
-        return new ResponseEntity<>("Ok", HttpStatus.OK);
-    }
-
 }

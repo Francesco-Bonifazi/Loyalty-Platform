@@ -1,6 +1,5 @@
 package it.unicam.ids.loyaltyplatform.pf.models;
 
-import it.unicam.ids.loyaltyplatform.puntovendita.models.PuntoVendita;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 
@@ -12,13 +11,8 @@ public class ProgrammaCashback extends ProgrammaFedelta{
         setType(PFType.PFCASHBACK);
     }
 
-    public ProgrammaCashback(PuntoVendita puntoVendita){
+    public ProgrammaCashback(int rapporto){
         setType(PFType.PFCASHBACK);
-        setPuntoVendita(puntoVendita);
-    }
-    public ProgrammaCashback(int rapporto, PuntoVendita puntoVendita){
-        setType(PFType.PFCASHBACK);
-        setPuntoVendita(puntoVendita);
         setRapporto(rapporto);
     }
 }

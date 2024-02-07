@@ -9,5 +9,6 @@ public interface PuntoVenditaRepository extends JpaRepository<PuntoVendita, Inte
 
     PuntoVendita findPuntoVenditaById(int id);
     PuntoVendita findPuntoVenditaByNome(String nome);
+
     void deletePuntoVenditaById(int id);
 }

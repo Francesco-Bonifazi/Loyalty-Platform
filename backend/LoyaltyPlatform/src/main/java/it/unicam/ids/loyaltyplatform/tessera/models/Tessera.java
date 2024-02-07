@@ -4,9 +4,11 @@ import it.unicam.ids.loyaltyplatform.account.models.Utente;
 import it.unicam.ids.loyaltyplatform.pf.models.ProgrammaFedelta;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Data
+@NoArgsConstructor
 public class Tessera {
 
     @Id
@@ -19,7 +21,10 @@ public class Tessera {
     private Utente utente;
 
     @ManyToOne
+    @JoinColumn(name = "programmafedelta_id")
     private ProgrammaFedelta programmaFedelta;
+
+    private int saldo;
 
     public Tessera(Utente utente, ProgrammaFedelta programmaFedelta){
         setUtente(utente);

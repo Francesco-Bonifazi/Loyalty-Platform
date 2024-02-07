@@ -1,19 +1,27 @@
 package it.unicam.ids.loyaltyplatform.account;
 
-import it.unicam.ids.loyaltyplatform.account.models.Account;
-import it.unicam.ids.loyaltyplatform.account.models.AccountType;
-import it.unicam.ids.loyaltyplatform.account.models.Utente;
-import it.unicam.ids.loyaltyplatform.tessera.models.Tessera;
+import it.unicam.ids.loyaltyplatform.account.models.*;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class AccountService {
     private final AccountRepository accountRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public <T extends Account> T addAccount(T account){
         if(this.accountRepository.findAccountByEmail(account.getEmail()) == null){
+            if(account.getPassword() == null){
+                account.setPassword(passwordEncoder.encode("default"));
+            } else {
+                account.setPassword(passwordEncoder.encode(account.getPassword()));
+            }
             return accountRepository.save(account);
         } else {
             throw new IllegalArgumentException("Account with Email: "+account.getEmail()+" already exists!");
@@ -21,9 +29,13 @@ public class AccountService {
     }
 
     public <T extends Account> T updateAccount(T account){
-        if(this.accountRepository.findAccountByEmail(account.getEmail()) == null){
+        T a = this.accountRepository.findAccountByEmail(account.getEmail());
+        if(a == null){
             throw new IllegalArgumentException("Couldn't find Account with Email: "+account.getEmail()+" in the database!");
         } else {
+            account.setId(a.getId());
+            account.setPassword(a.getPassword());
+            account.setType(a.getType());
             return accountRepository.save(account);
         }
     }
@@ -66,6 +78,7 @@ public class AccountService {
         }
     }
 
+    @Transactional
     public <T extends Account> void deleteAccount(T account){
         T a = accountRepository.findAccountById(account.getId());
         if(a == null){
@@ -77,6 +90,7 @@ public class AccountService {
         }
     }
 
+    @Transactional
     public void deleteAccount(int id){
         if(this.accountRepository.findAccountById(id) == null){
             throw new IllegalArgumentException("Couldn't find Account with ID: "+id+" in the database!");
@@ -85,6 +99,7 @@ public class AccountService {
         }
     }
 
+    @Transactional
     public void deleteAccount(String email){
         if(this.accountRepository.findAccountByEmail(email) == null){
             throw new IllegalArgumentException("Couldn't find Account with Email: "+email+" in the database!");
@@ -93,23 +108,22 @@ public class AccountService {
         }
     }
 
-    public void rimuoviTesseraUtente(int utente_id, Tessera tessera){
-        Utente utente = this.accountRepository.findAccountById(utente_id);
-        if(this.accountRepository.findAccountById(utente_id) == null){
-            throw new IllegalArgumentException("Couldn't find Account with ID: "+utente_id+" in the database!");
-        } else {
-            utente.removeTessera(tessera);
-            this.accountRepository.save(utente);
-        }
-    }
+    public List<Account> findDipendentiByPvId(int pv_id){
+        List<Account> dipendenti = new ArrayList<>();
+        List<Cassiere> cassieri= new ArrayList<>(accountRepository.findAccountsByType(AccountType.CASSIERE));
+        List<Amministratore> admins= new ArrayList<>(accountRepository.findAccountsByType(AccountType.AMMINISTRATORE));
 
-    public void rimuoviTesseraUtente(Utente utente, Tessera tessera){
-        if(this.accountRepository.findAccountByEmail(utente.getEmail()) == null){
-            throw new IllegalArgumentException("Couldn't find Account: "+utente+" in the database!");
-        } else {
-            utente.removeTessera(tessera);
-            this.accountRepository.save(utente);
+        for(Cassiere c : cassieri){
+            if(c.getPuntoVendita().getId() == pv_id){
+                dipendenti.add(c);
+            }
         }
+        for(Amministratore a : admins){
+            if(a.getPuntoVendita().getId() == pv_id){
+                dipendenti.add(a);
+            }
+        }
+        return dipendenti;
     }
 
 }

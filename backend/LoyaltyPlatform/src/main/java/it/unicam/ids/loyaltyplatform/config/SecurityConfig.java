@@ -18,33 +18,45 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final AuthenticationProvider authenticationProvider;
 
-    private static final String[] AUTH_WHITELIST = {
+    private final String[] AUTH_WHITELIST = {
             "/dashboard/auth/**",
-            "/dashboard/healthcheck"
+            "/dashboard/healthcheck",
+            "/dashboard/newutente",
+            "/dashboard/viewfattura/**",
+            "/dashboard/viewfatture/**",
+            "/dashboard/viewcatalogo/**"
     };
-    private static final String[] AUTH_TITOLARE = {
-
-            "/dashboard/newpuntovendita",
+    private final String[] PF_AUTH = {
             "/dashboard/newprogram",
             "/dashboard/editprogram"
     };
-    private static final String[] AUTH_ADMIN = {
-            "/dashboard/viewiscritti",
+    private final String[] PV_AUTH = {
+            "/dashboard/newpuntovendita"
+    };
+    private final String[] USER_REMOVE_AUTH = {
             "/dashboard/removeutente"
     };
-    private static final String[] AUTH_CASSIERE = {
-            "/dashboard/newutente",
-            "/dashboard/newtessera",
-            "/dashboard/visualizzaClienti"
+    private final String[] TESSERE_VIEW = {
+            "/dashboard/viewiscritti"
     };
-    private static final String[] AUTH_USER = {
-            "/dashboard/viewpuntovendita",
-            "/dashboard/removetessera",
-            "/dashboard/updateaccount",
+    private final String[] SUBSCRIBE_AUTH = {
+            "/dashboard/newtessera"
+    };
+    private final String[] PV_SEARCH = {
+            "/dashboard/viewpuntovendita"
+    };
+    private final String[] INFO_VIEW = {
             "/dashboard/viewinfo"
     };
-
-
+    private final String[] UNSUBSCRIBE = {
+            "/dashboard/removetessera",
+    };
+    private final String[] INFO_UPDATE = {
+            "/dashboard/updateaccount"
+    };
+    private final String[] DIPENDENTI_VIEW = {
+            "/dashboard/viewdipendenti"
+    };
 
     public SecurityConfig(JwtAuthenticationFilter jwtAuthFilter, AuthenticationProvider authenticationProvider){
 
@@ -59,10 +71,16 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(AUTH_WHITELIST).permitAll()
-                        .requestMatchers(AUTH_ADMIN).hasAuthority("AMMINISTRATORE")
-                        .requestMatchers(AUTH_CASSIERE).hasAuthority("CASSIERE")
-                        .requestMatchers(AUTH_TITOLARE).hasAuthority("TITOLARE")
-                        .requestMatchers(AUTH_USER).hasAuthority("UTENTE")
+                        .requestMatchers(PF_AUTH).hasAuthority("PF_AUTH")
+                        .requestMatchers(PV_AUTH).hasAuthority("PV_AUTH")
+                        .requestMatchers(USER_REMOVE_AUTH).hasAuthority("USER_REMOVE_AUTH")
+                        .requestMatchers(TESSERE_VIEW).hasAuthority("TESSERE_VIEW")
+                        .requestMatchers(SUBSCRIBE_AUTH).hasAuthority("SUBSCRIBE_AUTH")
+                        .requestMatchers(PV_SEARCH).hasAuthority("PV_SEARCH")
+                        .requestMatchers(INFO_VIEW).hasAuthority("INFO_VIEW")
+                        .requestMatchers(UNSUBSCRIBE).hasAuthority("UNSUBSCRIBE")
+                        .requestMatchers(INFO_UPDATE).hasAuthority("INFO_UPDATE")
+                        .requestMatchers(DIPENDENTI_VIEW).hasAuthority("DIPENDENTI_VIEW")
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

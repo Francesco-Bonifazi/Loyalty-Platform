@@ -5,9 +5,10 @@ import it.unicam.ids.loyaltyplatform.account.models.Utente;
 import it.unicam.ids.loyaltyplatform.pf.models.PFType;
 import it.unicam.ids.loyaltyplatform.pf.models.ProgrammaFedelta;
 import it.unicam.ids.loyaltyplatform.puntovendita.models.PuntoVendita;
-import it.unicam.ids.loyaltyplatform.tessera.models.Tessera;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,11 +17,6 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class DashboardController {
     private final DashboardService dashboardService;
-
-    @GetMapping("/healthcheck")
-    public ResponseEntity<String> test(){
-        return new ResponseEntity<String>("Works!", HttpStatus.OK);
-    }
 
     @PostMapping("/newpuntovendita")
     public ResponseEntity<?> registraPuntoVendita(@RequestParam("account_id") int account_id, @RequestBody PuntoVendita puntoVendita){
@@ -34,7 +30,7 @@ public class DashboardController {
     @GetMapping("/viewpuntovendita")
     public ResponseEntity<?> cercaPuntoVendita(@RequestParam("nome") String nome){
         try{
-            return new ResponseEntity<>(dashboardService.cercaPuntoVendita(nome), HttpStatus.OK);
+            return new ResponseEntity<>(dashboardService.cercaPuntoVendita(nome), HttpStatus.FOUND);
         } catch (Exception e){
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
@@ -68,9 +64,9 @@ public class DashboardController {
     }
 
     @DeleteMapping("/removetessera")
-    public ResponseEntity<?> rimuoviIscrizione(@RequestParam("account_id") int account_id, @RequestBody Tessera tessera){
+    public ResponseEntity<?> rimuoviIscrizione(@RequestParam("account_id") int account_id, @RequestParam int pf_id){
         try{
-            dashboardService.rimuoviIscrizione(account_id, tessera);
+            dashboardService.rimuoviIscrizionePF(account_id, pf_id);
             return new ResponseEntity<>("Removed!", HttpStatus.OK);
         } catch (Exception e){
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
@@ -114,16 +110,7 @@ public class DashboardController {
         }
     }
 
-    @GetMapping("/viewinfo")
-    public <T extends Account> ResponseEntity<?> visualizzaInfo(@RequestBody T account){
-        try{
-            return new ResponseEntity<>(dashboardService.visualizzaInfoCliente(account), HttpStatus.OK);
-        } catch (Exception e){
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        }
-    }
-
-    @GetMapping(value = "/viewinfo", params = {"account_id"})
+    @GetMapping(value = "/viewinfo")
     public <T extends Account> ResponseEntity<?> visualizzaInfo(@RequestParam("account_id") int account_id){
         try{
             return new ResponseEntity<>(dashboardService.visualizzaInfoCliente(account_id), HttpStatus.OK);
@@ -132,14 +119,44 @@ public class DashboardController {
         }
     }
 
-    @GetMapping(value = "/viewinfo", params = {"email"})
-    public <T extends Account> ResponseEntity<?> visualizzaInfo(@RequestParam("email") String email){
+    @GetMapping(value = "/viewdipendenti")
+    public ResponseEntity<?> visualizzaDipendenti(@RequestParam("pv_id") int pv_id){
         try{
-            return new ResponseEntity<>(dashboardService.visualizzaInfoCliente(email), HttpStatus.OK);
+            return new ResponseEntity<>(dashboardService.visualizzaDipendenti(pv_id), HttpStatus.FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @GetMapping(value = "/viewfattura/{id}", produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<?> visualizzaFattura(@PathVariable int id){
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Disposition", "inline; filename=fattura.pdf");
+        try {
+            return new ResponseEntity<>(dashboardService.visualizzaFattura(id), headers, HttpStatus.OK);
         } catch (Exception e){
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 
+    @GetMapping(value = "/viewfatture/{pv_id}", produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<?> visualizzaFatture(@PathVariable int pv_id){
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Disposition", "inline; filename=fattura.pdf");
+        try {
+            return new ResponseEntity<>(dashboardService.visualizzaFatture(pv_id), headers, HttpStatus.OK);
+        } catch (Exception e){
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @GetMapping(value = "/viewcatalogo/{programma_id}")
+    public ResponseEntity<?> visualizzaCatalogo(@PathVariable int programma_id){
+        try{
+            return new ResponseEntity<>(dashboardService.visualizzaPremi(programma_id), HttpStatus.OK);
+        } catch (Exception e){
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
 
 }

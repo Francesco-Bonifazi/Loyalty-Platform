@@ -47,6 +47,14 @@ public class PuntoVenditaService {
         }
     }
 
+    public PuntoVendita updatePuntoVendita(PuntoVendita puntoVendita){
+        if(puntoVenditaRepository.findPuntoVenditaById(puntoVendita.getId()) != null){
+            return puntoVenditaRepository.save(puntoVendita);
+        } else {
+            throw new IllegalArgumentException("Couldn't find Punto Vendita ID: "+puntoVendita.getId()+"!");
+        }
+    }
+
     public List<ProgrammaFedelta> findProgrammiAttivi(int id){
         PuntoVendita puntoVendita = puntoVenditaRepository.findPuntoVenditaById(id);
         if(puntoVendita == null){
